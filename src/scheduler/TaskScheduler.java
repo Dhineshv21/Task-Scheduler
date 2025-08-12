@@ -1,5 +1,6 @@
 package scheduler;
 
+import task.ScheduleType;
 import task.Task;
 import task.TaskSpec;
 import task.TaskStatus;
@@ -56,7 +57,17 @@ public class TaskScheduler{
 
             @Override
             public void run() {
+                try {
+                    task.getSpec().getAction().run();
+                    task.setStatus(TaskStatus.COMPLETED);
+                } catch (Exception e) {
+                    task.setStatus(TaskStatus.FAILED);
+                }
 
+                if (task.getSpec().getScheduleType() == ScheduleType.REPEATED) {
+                    task.updateNextRunTime();
+                    task.setStatus(TaskStatus.PENDING);
+                }
             }
         }
     }

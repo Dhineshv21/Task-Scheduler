@@ -10,6 +10,17 @@ public class TaskSpec {
     Priority priority;
     Runnable action;
 
+    public TaskSpec(String name, ScheduleType scheduleType, LocalDateTime scheduledTime,
+                    Duration interval, Priority priority, Runnable action) {
+        this.name = name;
+        this.scheduleType = scheduleType;
+        this.scheduledTime = scheduledTime;
+        this.interval = interval;
+        this.priority = priority;
+        this.action = action;
+    }
+
+
     public String getName() {
         return name;
     }

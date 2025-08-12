@@ -20,9 +20,10 @@ public class TaskScheduler{
         checkerThread.start();
     }
 
-    public void addTask(TaskSpec task) {
-        tasks.add(new Task(task));
+    public void addTask(Task task) {
+        tasks.add(task);
     }
+
 
     public void shutdown() {
         running = false;
@@ -38,12 +39,18 @@ public class TaskScheduler{
                         task.setStatus(TaskStatus.RUNNING);
                         workerPool.submit(new TaskRunner(task));
                     }
+                    if (task.getNextRunTime() == null) {
+                        System.err.println("⚠️ Task " + task.getSpec().getName() + " has null nextRunTime");
+                        continue;
+                    }
                 }
+
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
+
             }
             }
         }
@@ -68,6 +75,15 @@ public class TaskScheduler{
                     task.updateNextRunTime();
                     task.setStatus(TaskStatus.PENDING);
                 }
+
+                Runnable action = task.getSpec().getAction();
+                if (action != null) {
+                    action.run();
+                } else {
+                    System.err.println("⚠️ Task action is null for: " + task.getSpec().getName());
+                }
+                System.out.println("🔄 Running task: " + task.getSpec().getName() + " at " + LocalDateTime.now());
+
             }
         }
     }

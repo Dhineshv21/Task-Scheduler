@@ -29,8 +29,10 @@ public class Task {
         }
     }
 
-
-    public Task(TaskSpec task) {
-        this.spec = task;
+    public Task(TaskSpec spec) {
+        this.spec = spec;
+        this.status = TaskStatus.PENDING;
+        this.nextRunTime = spec.getScheduledTime();
     }
+
 }

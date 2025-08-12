@@ -2,6 +2,7 @@ package scheduler;
 
 import task.Task;
 import task.TaskSpec;
+import task.TaskStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,9 +29,33 @@ public class TaskScheduler{
     }
 
     private class TaskChecker implements Runnable {
-
         @Override
         public void run() {
+            while (running) {
+                for (Task task : tasks) {
+                    if(LocalDateTime.now().isAfter(task.getNextRunTime()) && task.getStatus() == TaskStatus.PENDING) {
+                        task.setStatus(TaskStatus.RUNNING);
+                        workerPool.submit(new TaskRunner(task));
+                    }
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            }
+        }
+
+        private class TaskRunner implements Runnable {
+            private Task task;
+
+            TaskRunner(Task task) {
+                this.task = task;
+            }
+
+            @Override
+            public void run() {
 
             }
         }

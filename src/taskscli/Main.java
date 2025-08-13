@@ -29,6 +29,9 @@ public class Main {
                     scheduler.schedule(name, delay);
                     break;
 
+                case "LIST":
+                    scheduler.listTask();
+
                 case "SHUTDOWN":
                     scheduler.shutdown();
                     return;

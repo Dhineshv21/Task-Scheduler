@@ -31,6 +31,11 @@ public class Main {
 
                 case "LIST":
                     scheduler.listTask();
+                    break;
+
+                case "UPDATE":
+                    scheduler.markCompleted(parts[1]);
+                    break;
 
                 case "SHUTDOWN":
                     scheduler.shutdown();

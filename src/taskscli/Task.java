@@ -13,8 +13,8 @@ public class Task implements Runnable{
 
     @Override
     public void run() {
-        System.out.println("Task is Executed: " + name);
         scheduler.markCompleted(name);
+        System.out.println("Task is Executed: " + name);
     }
 
     public String getName() {

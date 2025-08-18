@@ -3,6 +3,7 @@ package taskscli;
 import java.util.Scanner;
 
 public class Main {
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         TaskScheduler scheduler = new TaskScheduler();
@@ -24,17 +25,23 @@ public class Main {
                         System.out.println("Invalid Input. Eg. ADD <name> <delay>");
                         break;
                     }
+
                     String name = parts[1];
                     int delay = Integer.parseInt(parts[2]);
                     scheduler.schedule(name, delay);
                     break;
-
+                    
                 case "LIST":
                     scheduler.listTask();
                     break;
 
-                case "UPDATE":
-                    scheduler.markCompleted(parts[1]);
+                case "DELETE":
+                    System.out.print("Enter task name to delete: ");
+                    String nameToDelete = sc.nextLine();
+                    scheduler.deleteTask(nameToDelete);
+
+                case "STATUS":
+                    scheduler.getStatus(parts[1]);
                     break;
 
                 case "SHUTDOWN":

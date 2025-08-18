@@ -41,7 +41,13 @@ public class Main {
                     scheduler.deleteTask(nameToDelete);
 
                 case "STATUS":
-                    scheduler.getStatus(parts[1]);
+                    System.out.print("Enter task name to get Status: ");
+                    String nameToGetStatus = sc.nextLine();
+                    scheduler.getStatus(nameToGetStatus);
+                    break;
+
+                case "HISTORY":
+                    scheduler.printHistory();
                     break;
 
                 case "SHUTDOWN":

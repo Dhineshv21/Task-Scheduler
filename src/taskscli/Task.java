@@ -1,9 +1,8 @@
 package taskscli;
 
-
 public class Task implements Runnable{
 
-    private String name;
+    private final String name;
     TaskScheduler scheduler;
 
     public Task (String name, TaskScheduler scheduler) {
@@ -13,11 +12,19 @@ public class Task implements Runnable{
 
     @Override
     public void run() {
-        scheduler.markCompleted(name);
-        System.out.println("Task is Executed: " + name);
+        try {
+            scheduler.markCompleted(name);
+            scheduler.logHistory(name, "COMPLETED");
+            System.out.println("Task is Executed: " + name);
+        } catch (Exception e) {
+            scheduler.markFailed(name); // new method
+            scheduler.logHistory(name, "FAILED");
+            System.out.println("Task failed: " + name);
+        }
     }
 
     public String getName() {
         return name;
     }
+
 }

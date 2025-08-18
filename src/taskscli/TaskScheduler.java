@@ -1,16 +1,21 @@
 package taskscli;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.time.format.DateTimeFormatter;
+
 
 public class TaskScheduler {
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
     private final List<String> scheduledTaskNames = new ArrayList<>();
     private final Map<String, String> taskStatusMap = new HashMap<>();
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
+    private final List<TaskHistoryEntry> history = new ArrayList<>();
+
 
     public void schedule(String name, int delaySeconds) {
         Task task = new Task(name, this);
@@ -31,6 +36,25 @@ public class TaskScheduler {
             System.out.println("Task: " + ls);
         }
     }
+
+    public void printHistory() {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd:MM:yyyy");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+        for (TaskHistoryEntry entry : history) {
+            String date = entry.getTimestamp().format(dateFormatter);
+            String time = entry.getTimestamp().format(timeFormatter);
+            System.out.printf("Task: %-10s Status: %-10s Date: %s Time: %s%n",
+                    entry.getTaskName(), entry.getStatus(), date, time);
+        }
+
+    }
+
+
+    public void logHistory(String taskName, String status) {
+        history.add(new TaskHistoryEntry(taskName, status, LocalDateTime.now()));
+    }
+
 
     public void markCompleted(String name) {
         taskStatusMap.put(name, "COMPLETED");
@@ -59,6 +83,11 @@ public class TaskScheduler {
             System.out.println("Failed to remove Task");
         }
     }
+
+    public void markFailed(String name) {
+        taskStatusMap.put(name, "FAILED");
+    }
+
 
     public void shutdown() {
         executor.shutdown();

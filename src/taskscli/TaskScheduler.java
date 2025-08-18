@@ -78,6 +78,7 @@ public class TaskScheduler {
         if (cancelled) {
             scheduledTasks.remove(name);
             taskStatusMap.put(name, "DELETED");
+            history.add(new TaskHistoryEntry(name, "DELETED", LocalDateTime.now()));
             System.out.println("Task Removed: " + name);
         } else {
             System.out.println("Failed to remove Task");
@@ -86,6 +87,7 @@ public class TaskScheduler {
 
     public void markFailed(String name) {
         taskStatusMap.put(name, "FAILED");
+        history.add(new TaskHistoryEntry(name, "FAILED", LocalDateTime.now()));
     }
 
 

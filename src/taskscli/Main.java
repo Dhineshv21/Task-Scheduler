@@ -27,8 +27,9 @@ public class Main {
                     }
 
                     String name = parts[1];
-                    int delay = Integer.parseInt(parts[2]);
-                    scheduler.schedule(name, delay);
+                    String description = parts[2];
+                    int delay = Integer.parseInt(parts[3]);
+                    scheduler.schedule(name, description, delay);
                     break;
                     
                 case "LIST":
@@ -39,6 +40,7 @@ public class Main {
                     System.out.print("Enter task name to delete: ");
                     String nameToDelete = sc.nextLine();
                     scheduler.deleteTask(nameToDelete);
+                    break;
 
                 case "STATUS":
                     System.out.print("Enter task name to get Status: ");

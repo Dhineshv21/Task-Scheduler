@@ -14,13 +14,15 @@ public class TaskScheduler {
     private final List<String> scheduledTaskNames = new ArrayList<>();
     private final Map<String, String> taskStatusMap = new HashMap<>();
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
+    private final Map<String, Task> taskMap = new HashMap<>();
     private final List<TaskHistoryEntry> history = new ArrayList<>();
 
 
-    public void schedule(String name, int delaySeconds) {
-        Task task = new Task(name, this);
+    public void schedule(String name, String description, int delaySeconds) {
+        Task task = new Task(name, description, this);
         ScheduledFuture<?> future = executor.schedule(task, delaySeconds, TimeUnit.SECONDS);
         scheduledTasks.put(name, future);
+        taskMap.put(name, task);
         System.out.println("Scheduled: " + name + " after " + delaySeconds + "s");
         scheduledTaskNames.add(name);
         taskStatusMap.put(name, "PENDING");
@@ -32,8 +34,9 @@ public class TaskScheduler {
             return;
         }
         System.out.println("List of Tasks: ");
-        for (String ls : scheduledTaskNames) {
-            System.out.println("Task: " + ls);
+        for (String name : scheduledTaskNames) {
+            Task task = taskMap.get(name);
+            System.out.printf("Task: %-15s | Desc: %s%n", name, task.getTaskDescription());
         }
     }
 

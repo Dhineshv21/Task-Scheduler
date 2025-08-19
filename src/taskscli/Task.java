@@ -3,10 +3,12 @@ package taskscli;
 public class Task implements Runnable{
 
     private final String name;
+    private final String taskDescription;
     TaskScheduler scheduler;
 
-    public Task (String name, TaskScheduler scheduler) {
+    public Task (String name, String description, TaskScheduler scheduler) {
         this.name = name;
+        this.taskDescription = description;
         this.scheduler = scheduler;
     }
 
@@ -17,7 +19,7 @@ public class Task implements Runnable{
             scheduler.logHistory(name, "COMPLETED");
             System.out.println("Task is Executed: " + name);
         } catch (Exception e) {
-            scheduler.markFailed(name); // new method
+            scheduler.markFailed(name);
             scheduler.logHistory(name, "FAILED");
             System.out.println("Task failed: " + name);
         }
@@ -25,6 +27,10 @@ public class Task implements Runnable{
 
     public String getName() {
         return name;
+    }
+
+    public String getTaskDescription() {
+        return taskDescription;
     }
 
 }

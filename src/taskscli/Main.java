@@ -52,6 +52,40 @@ public class Main {
                     scheduler.printHistory();
                     break;
 
+                case "REPEAT":
+                    System.out.println("\nREPEAT: <name> <description>");
+                    String repeatInput = sc.nextLine().trim();
+                    String[] repeatParts = repeatInput.split("\\s+", 2);
+
+                    if (repeatParts.length < 2) {
+                        System.out.println("Invalid input. Usage: REPEAT <name> <description>");
+                        break;
+                    }
+
+                    System.out.print("Enter delay interval in seconds: ");
+
+                    int repeatDelay = -1;
+                    while (repeatDelay < 0) {
+                        System.out.print("Enter delay in seconds: ");
+                        String delayInput = sc.nextLine().trim();
+                        try {
+                            repeatDelay = Integer.parseInt(delayInput);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid input. Please enter a valid number.");
+                        }
+                    }
+
+                    String repeatName = repeatParts[0];
+                    String repeatDesc = repeatParts[1];
+                    scheduler.repeatingTask(repeatName, repeatDesc, repeatDelay);
+                    break;
+
+                case "STOPREPEAT":
+                    System.out.print("Enter task name to stop repeating: ");
+                    String stopName = sc.nextLine().trim();
+                    scheduler.stopRepeatingTask(stopName);
+                    break;
+
                 case "SHUTDOWN":
                     scheduler.shutdown();
                     return;

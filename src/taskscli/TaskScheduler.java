@@ -14,6 +14,7 @@ public class TaskScheduler {
     private final List<String> scheduledTaskNames = new ArrayList<>();
     private final Map<String, String> taskStatusMap = new HashMap<>();
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
+    private final Map<String, ScheduledFuture<?>> repeatingTasks = new HashMap<>();
     private final Map<String, Task> taskMap = new HashMap<>();
     private final List<TaskHistoryEntry> history = new ArrayList<>();
 
@@ -53,6 +54,55 @@ public class TaskScheduler {
 
     }
 
+    public void repeatingTask(String name, String description, int delay) {
+        if (repeatingTasks.containsKey(name)) {
+            System.out.println("Task '" + name + "' is already repeating.");
+            return;
+        }
+        class RepeatingTasks implements Runnable {
+            private final String taskName;
+
+            public RepeatingTasks(String taskName) {
+                this.taskName = taskName;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    System.out.println("Repeating Task Executed: " + taskName);
+                    logHistory(name, "REPEATED");
+                } catch (Exception e) {
+                    markFailed(taskName);
+                    System.out.println("Repeating Task Failed: " + taskName);
+                }
+            }
+        }
+
+        RepeatingTasks task = new RepeatingTasks(name);
+        ScheduledFuture<?> future = executor.scheduleAtFixedRate(task, delay, delay, TimeUnit.SECONDS);
+        repeatingTasks.put(name, future);
+        taskStatusMap.put(name, "REPEATING");
+        taskMap.put(name, new Task(name, description, this));
+        System.out.println("Repeating Task Scheduled: " + name + " every " + delay + "s");
+    }
+
+    public void stopRepeatingTask(String name) {
+        ScheduledFuture<?> future = repeatingTasks.get(name);
+        if (future == null) {
+            System.out.println("No repeating task found with name: " + name);
+            return;
+        }
+
+        boolean cancelled = future.cancel(false);
+        if (cancelled) {
+            repeatingTasks.remove(name);
+            taskStatusMap.put(name, "STOPPED");
+            logHistory(name, "STOPPED");
+            System.out.println("Repeating Task Stopped: " + name);
+        } else {
+            System.out.println("Failed to stop repeating task: " + name);
+        }
+    }
 
     public void logHistory(String taskName, String status) {
         history.add(new TaskHistoryEntry(taskName, status, LocalDateTime.now()));
@@ -64,12 +114,15 @@ public class TaskScheduler {
     }
 
     public void getStatus(String name) {
-        if(taskStatusMap.containsKey(name)) {
-            System.out.println("Status of '" + name + "': " + taskStatusMap.get(name));
+        if (taskStatusMap.containsKey(name)) {
+            String status = taskStatusMap.get(name);
+            String type = repeatingTasks.containsKey(name) ? "REPEATING" : "ONE-TIME";
+            System.out.println("Status of '" + name + "': " + status + " (" + type + ")");
         } else {
             System.out.println("Task: '" + name + "' not found");
         }
     }
+
 
     public void deleteTask(String name) {
         ScheduledFuture<?> future = scheduledTasks.get(name);

@@ -26,7 +26,7 @@ public class TaskScheduler {
         taskMap.put(name, task);
         System.out.println("Scheduled: " + name + " after " + delaySeconds + "s");
         scheduledTaskNames.add(name);
-        taskStatusMap.put(name, "PENDING");
+        taskStatusMap.put(name, "PENDING ⌛");
     }
 
     public void listTask() {
@@ -42,13 +42,13 @@ public class TaskScheduler {
     }
 
     public void printHistory() {
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd:MM:yyyy");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
 
         for (TaskHistoryEntry entry : history) {
             String date = entry.getTimestamp().format(dateFormatter);
             String time = entry.getTimestamp().format(timeFormatter);
-            System.out.printf("Task: %-10s Status: %-10s Date: %s Time: %s%n",
+            System.out.printf("Task: %-10s | Status: %-10s | Date: %s Time: %s%n" ,
                     entry.getTaskName(), entry.getStatus(), date, time);
         }
 
@@ -70,7 +70,7 @@ public class TaskScheduler {
             public void run() {
                 try {
                     System.out.println("Repeating Task Executed: " + taskName);
-                    logHistory(name, "REPEATED");
+                    logHistory(name, "REPEATED \uD83D\uDD04");
                 } catch (Exception e) {
                     markFailed(taskName);
                     System.out.println("Repeating Task Failed: " + taskName);
@@ -81,7 +81,7 @@ public class TaskScheduler {
         RepeatingTasks task = new RepeatingTasks(name);
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(task, delay, delay, TimeUnit.SECONDS);
         repeatingTasks.put(name, future);
-        taskStatusMap.put(name, "REPEATING");
+        taskStatusMap.put(name, "REPEATING \uD83D\uDD04");
         taskMap.put(name, new Task(name, description, this));
         System.out.println("Repeating Task Scheduled: " + name + " every " + delay + "s");
     }
@@ -96,8 +96,8 @@ public class TaskScheduler {
         boolean cancelled = future.cancel(false);
         if (cancelled) {
             repeatingTasks.remove(name);
-            taskStatusMap.put(name, "STOPPED");
-            logHistory(name, "STOPPED");
+            taskStatusMap.put(name, "STOPPED ⛔");
+            logHistory(name, "STOPPED ⛔");
             System.out.println("Repeating Task Stopped: " + name);
         } else {
             System.out.println("Failed to stop repeating task: " + name);
@@ -110,7 +110,7 @@ public class TaskScheduler {
 
 
     public void markCompleted(String name) {
-        taskStatusMap.put(name, "COMPLETED");
+        taskStatusMap.put(name, "COMPLETED ✅ ");
     }
 
     public void getStatus(String name) {
@@ -133,8 +133,8 @@ public class TaskScheduler {
         boolean cancelled = future.cancel(false);
         if (cancelled) {
             scheduledTasks.remove(name);
-            taskStatusMap.put(name, "DELETED");
-            history.add(new TaskHistoryEntry(name, "DELETED", LocalDateTime.now()));
+            taskStatusMap.put(name, "DELETED \uD83D\uDDD1\uFE0F ");
+            history.add(new TaskHistoryEntry(name, "DELETED \uD83D\uDDD1\uFE0F ", LocalDateTime.now()));
             System.out.println("Task Removed: " + name);
         } else {
             System.out.println("Failed to remove Task");
@@ -142,13 +142,16 @@ public class TaskScheduler {
     }
 
     public void markFailed(String name) {
-        taskStatusMap.put(name, "FAILED");
-        history.add(new TaskHistoryEntry(name, "FAILED", LocalDateTime.now()));
+        taskStatusMap.put(name, "FAILED ❌ ");
+        history.add(new TaskHistoryEntry(name, "FAILED ❌ ", LocalDateTime.now()));
     }
 
+    public void clearHistory() {
+
+    }
 
     public void shutdown() {
         executor.shutdown();
-        System.out.println("Scheduler Shutdown");
+        System.out.println("The Program has ended.");
     }
 }

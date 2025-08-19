@@ -1,0 +1,11 @@
+//                Cases To ADD
+
+//                case "CLEAR HISTORY"
+//                case "CLEAR SPECIFIC HISTORY"
+//                case "RENAME TASK"
+//                case "SET REPEAT TIME"
+//                case "INCREASE DELAY"
+//                case "FILE HANDLING"
+//                case "INTEGRATE DAYS"
+//                case "INTEGRATE TIME SPECIFIC DELAYS"
+//                case "PAUSE TASK"

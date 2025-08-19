@@ -11,7 +11,7 @@ public class Main {
         System.out.println("Welcome to Task Scheduler");
 
         while(true) {
-            System.out.println("\nEnter command: ADD <name> <delay>, SHUTDOWN");
+            System.out.println("\nEnter command: ADD <name> <description> <delay>, SHUTDOWN");
             String input = sc.nextLine().trim();
             String[] parts = input.split("\\s+");
 

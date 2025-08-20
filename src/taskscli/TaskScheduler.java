@@ -41,9 +41,24 @@ public class TaskScheduler {
         }
     }
 
+    public void renameTask(String oldName, String newName) {
+        Task task = taskMap.get(oldName);
+        if(task != null) {
+            task.setName(newName);
+            System.out.println("Task Rename Successful to " + newName);
+        } else {
+            System.out.println("Task Not Found");
+        }
+    }
+
     public void printHistory() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+        if(history.isEmpty()) {
+            System.out.println("No History Found");
+            return;
+        }
 
         for (TaskHistoryEntry entry : history) {
             String date = entry.getTimestamp().format(dateFormatter);
@@ -147,7 +162,12 @@ public class TaskScheduler {
     }
 
     public void clearHistory() {
-
+        if(history != null) {
+            history.clear();
+            System.out.println("History Has Been Cleared Successfully");
+        } else {
+            System.out.println("No History to clear");
+        }
     }
 
     public void shutdown() {

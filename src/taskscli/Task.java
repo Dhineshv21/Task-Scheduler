@@ -2,7 +2,7 @@ package taskscli;
 
 public class Task implements Runnable{
 
-    private final String name;
+    private String name;
     private final String taskDescription;
     TaskScheduler scheduler;
 
@@ -27,6 +27,10 @@ public class Task implements Runnable{
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name){
+        this.name = name;
     }
 
     public String getTaskDescription() {

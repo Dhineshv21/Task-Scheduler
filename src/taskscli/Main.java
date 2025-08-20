@@ -86,6 +86,10 @@ public class Main {
                     scheduler.stopRepeatingTask(stopName);
                     break;
 
+                case "CLEARHISTORY":
+                    scheduler.clearHistory();
+                    break;
+
                 case "SHUTDOWN":
                     scheduler.shutdown();
                     return;

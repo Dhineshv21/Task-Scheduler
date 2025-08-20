@@ -45,7 +45,7 @@ public class TaskScheduler {
         Task task = taskMap.get(oldName);
         if(task != null) {
             task.setName(newName);
-            System.out.println("Task Rename Successful to " + newName);
+            System.out.println("Task " + oldName + " renamed to \"" + newName + "\" successfully.");
         } else {
             System.out.println("Task Not Found");
         }

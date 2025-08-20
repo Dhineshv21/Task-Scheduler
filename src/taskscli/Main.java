@@ -1,6 +1,7 @@
 package taskscli;
 
 import java.util.Scanner;
+import java.util.Arrays;
 
 public class Main {
 
@@ -88,6 +89,20 @@ public class Main {
 
                 case "CLEARHISTORY":
                     scheduler.clearHistory();
+                    break;
+
+                case "RENAME":
+                    scheduler.listTask();
+                    System.out.println("\nEnter command: RENAME <task_id> <new_task_name>");
+                    String renameInput = sc.nextLine().trim();
+                    String[] tokens = renameInput.split(" ");
+                    if (tokens.length >= 3) {
+                        String taskId = tokens[1];
+                        String newName = String.join(" ", Arrays.copyOfRange(tokens, 2, tokens.length)).replaceAll("^\"|\"$", "");
+                        scheduler.renameTask(taskId, newName);
+                    } else {
+                        System.out.println("Usage: RENAME <task_id> <new_task_name>");
+                    }
                     break;
 
                 case "SHUTDOWN":

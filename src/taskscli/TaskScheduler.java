@@ -142,8 +142,11 @@ public class TaskScheduler {
         for (int i = 0; i < history.size(); i++) {
             if(history.get(i).getTaskName().equals(name)) {
                 history.remove(i);
+                System.out.println("Task History: " + name + " has been removed successfully.");
+                return;
             }
         }
+        System.out.println("Task not found.");
     }
 
     public void deleteTask(String name) {

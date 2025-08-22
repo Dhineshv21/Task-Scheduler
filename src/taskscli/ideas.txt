@@ -1,7 +1,7 @@
 //                Cases To ADD
 
 //                case "CLEAR HISTORY" - DONE
-//                case "CLEAR SPECIFIC HISTORY"
+//                case "CLEAR SPECIFIC HISTORY" - DONE
 //                case "RENAME TASK" - DONE
 //                case "SET REPEAT TIME"
 //                case "INCREASE DELAY"

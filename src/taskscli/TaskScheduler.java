@@ -52,7 +52,7 @@ public class TaskScheduler {
     }
 
     public void printHistory() {
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
 
         if(history.isEmpty()) {
@@ -138,6 +138,13 @@ public class TaskScheduler {
         }
     }
 
+    public void deleteSpecificTask(String name) {
+        for (int i = 0; i < history.size(); i++) {
+            if(history.get(i).getTaskName().equals(name)) {
+                history.remove(i);
+            }
+        }
+    }
 
     public void deleteTask(String name) {
         ScheduledFuture<?> future = scheduledTasks.get(name);

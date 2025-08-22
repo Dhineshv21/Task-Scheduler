@@ -91,6 +91,13 @@ public class Main {
                     scheduler.clearHistory();
                     break;
 
+                case "CLEARHISTORY1":
+                    System.out.println("Enter Task Name to clear: ");
+                    String historyName = sc.next();
+                    sc.nextLine();
+                    scheduler.deleteSpecificTask(historyName);
+                    break;
+
                 case "RENAME":
                     scheduler.listTask();
                     System.out.println("\nEnter command: RENAME <task_id> <new_task_name>");

@@ -1,26 +1,25 @@
 package taskscli;
 
-public class Task implements Runnable{
+
+public class Task implements Runnable {
 
     private String name;
     private final String taskDescription;
-    TaskScheduler scheduler;
+    private final TaskLifecycleListener listener;
 
-    public Task (String name, String description, TaskScheduler scheduler) {
+    public Task(String name, String description, TaskLifecycleListener listener) {
         this.name = name;
         this.taskDescription = description;
-        this.scheduler = scheduler;
+        this.listener = listener;
     }
 
     @Override
     public void run() {
         try {
-            scheduler.markCompleted(name);
-            scheduler.logHistory(name, "COMPLETED ✅ ");
+            listener.onCompleted(name);
             System.out.println("Task is Executed: " + name);
         } catch (Exception e) {
-            scheduler.markFailed(name);
-            scheduler.logHistory(name, "FAILED ❌");
+            listener.onFailed(name);
             System.out.println("Task failed: " + name);
         }
     }
@@ -29,12 +28,12 @@ public class Task implements Runnable{
         return name;
     }
 
-    public void setName(String name){
+    public void setName(String name) {
         this.name = name;
     }
 
     public String getTaskDescription() {
         return taskDescription;
     }
-
 }
+

@@ -1,123 +1,110 @@
 package taskscli;
 
 import java.util.Scanner;
-import java.util.Arrays;
 
 public class Main {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        TaskScheduler scheduler = new TaskScheduler();
+        TaskServiceCoordinator scheduler = new TaskServiceCoordinator();
 
-        System.out.println("Welcome to Task Scheduler");
+        System.out.println("🛠️ Welcome to Task Scheduler CLI");
 
-        while(true) {
-            System.out.println("\nEnter command: ADD <name> <description> <delay>, SHUTDOWN");
+        while (true) {
+            System.out.println("\nChoose an option:");
+            System.out.println("1. Add Task");
+            System.out.println("2. List Tasks");
+            System.out.println("3. Delete Task");
+            System.out.println("4. Get Task Status");
+            System.out.println("5. View Task History");
+            System.out.println("6. Clear Task History");
+            System.out.println("7. Schedule Repeating Task");
+            System.out.println("8. Stop Repeating Task");
+            System.out.println("9. Rename Task");
+            System.out.println("10. Shutdown");
+
+            System.out.print("\nEnter choice (1-10): ");
             String input = sc.nextLine().trim();
-            String[] parts = input.split("\\s+");
 
-            if(parts.length == 0) continue;
+            int choice;
+            try {
+                choice = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 10.");
+                continue;
+            }
 
-            String command = parts[0].toUpperCase();
-
-            switch (command) {
-                case "ADD":
-                    if(parts.length < 3) {
-                        System.out.println("Invalid Input. Eg. ADD <name> <delay>");
-                        break;
-                    }
-
-                    String name = parts[1];
-                    String description = parts[2];
-                    int delay = Integer.parseInt(parts[3]);
-                    scheduler.schedule(name, description, delay);
-                    break;
-                    
-                case "LIST":
-                    scheduler.listTask();
+            switch (choice) {
+                case 1: // Add Task
+                    System.out.print("Enter task name: ");
+                    String name = sc.nextLine().trim();
+                    System.out.print("Enter description: ");
+                    String desc = sc.nextLine().trim();
+                    System.out.print("Enter delay in seconds: ");
+                    int delay = Integer.parseInt(sc.nextLine().trim());
+                    scheduler.addTask(name, desc, delay);
                     break;
 
-                case "DELETE":
+                case 2: // List Tasks
+                    scheduler.listTasks();
+                    break;
+
+                case 3: // Delete Task
                     System.out.print("Enter task name to delete: ");
-                    String nameToDelete = sc.nextLine();
-                    scheduler.deleteTask(nameToDelete);
+                    String deleteName = sc.nextLine().trim();
+                    scheduler.removeTask(deleteName);
                     break;
 
-                case "STATUS":
-                    System.out.print("Enter task name to get Status: ");
-                    String nameToGetStatus = sc.nextLine();
-                    scheduler.getStatus(nameToGetStatus);
+                case 4: // Get Status
+                    System.out.print("Enter task name to check status: ");
+                    String statusName = sc.nextLine().trim();
+                    scheduler.getStatus(statusName);
                     break;
 
-                case "HISTORY":
-                    scheduler.printHistory();
+                case 5: // View History
+                    System.out.print("Enter task name to view history: ");
+                    String historyName = sc.nextLine().trim();
+                    scheduler.printHistory(historyName);
                     break;
 
-                case "REPEAT":
-                    System.out.println("\nREPEAT: <name> <description>");
-                    String repeatInput = sc.nextLine().trim();
-                    String[] repeatParts = repeatInput.split("\\s+", 2);
+                case 6: // Clear History
+                    System.out.print("Enter task name to clear history: ");
+                    String clearName = sc.nextLine().trim();
+                    scheduler.clearHistory(clearName);
+                    break;
 
-                    if (repeatParts.length < 2) {
-                        System.out.println("Invalid input. Usage: REPEAT <name> <description>");
-                        break;
-                    }
-
+                case 7: // Repeating Task
+                    System.out.print("Enter task name: ");
+                    String repeatName = sc.nextLine().trim();
+                    System.out.print("Enter description: ");
+                    String repeatDesc = sc.nextLine().trim();
                     System.out.print("Enter delay interval in seconds: ");
-
-                    int repeatDelay = -1;
-                    while (repeatDelay < 0) {
-                        System.out.print("Enter delay in seconds: ");
-                        String delayInput = sc.nextLine().trim();
-                        try {
-                            repeatDelay = Integer.parseInt(delayInput);
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid input. Please enter a valid number.");
-                        }
-                    }
-
-                    String repeatName = repeatParts[0];
-                    String repeatDesc = repeatParts[1];
-                    scheduler.repeatingTask(repeatName, repeatDesc, repeatDelay);
+                    int repeatDelay = Integer.parseInt(sc.nextLine().trim());
+                    scheduler.repeatTask(repeatName, repeatDesc, repeatDelay);
                     break;
 
-                case "STOPREPEAT":
+                case 8: // Stop Repeating
                     System.out.print("Enter task name to stop repeating: ");
                     String stopName = sc.nextLine().trim();
-                    scheduler.stopRepeatingTask(stopName);
+                    scheduler.stopRepeat(stopName);
                     break;
 
-                case "CLEARHISTORY":
-                    scheduler.clearHistory();
+                case 9: // Rename Task
+                    scheduler.listTasks();
+                    System.out.print("Enter current task name: ");
+                    String oldName = sc.nextLine().trim();
+                    System.out.print("Enter new task name: ");
+                    String newName = sc.nextLine().trim();
+                    scheduler.renameTask(oldName, newName);
                     break;
 
-                case "CLEARHISTORY1":
-                    System.out.println("Enter Task Name to clear: ");
-                    String historyName = sc.next();
-                    sc.nextLine();
-                    scheduler.deleteSpecificTask(historyName);
-                    break;
-
-                case "RENAME":
-                    scheduler.listTask();
-                    System.out.println("\nEnter command: RENAME <task_id> <new_task_name>");
-                    String renameInput = sc.nextLine().trim();
-                    String[] tokens = renameInput.split(" ");
-                    if (tokens.length >= 3) {
-                        String taskId = tokens[1];
-                        String newName = String.join(" ", Arrays.copyOfRange(tokens, 2, tokens.length)).replaceAll("^\"|\"$", "");
-                        scheduler.renameTask(taskId, newName);
-                    } else {
-                        System.out.println("Usage: RENAME <task_id> <new_task_name>");
-                    }
-                    break;
-
-                case "SHUTDOWN":
+                case 10: // Shutdown
                     scheduler.shutdown();
+                    System.out.println("👋 Scheduler shutdown complete.");
                     return;
 
                 default:
-                    System.out.println("Unknown Command.");
+                    System.out.println("Invalid choice. Please select a number between 1 and 10.");
             }
         }
     }

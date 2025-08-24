@@ -3,24 +3,18 @@ package taskscli;
 import java.time.LocalDateTime;
 
 public class TaskHistoryEntry {
-
-    private final String name;
+    private final String taskName;
     private final String status;
     private final LocalDateTime timestamp;
 
-    public TaskHistoryEntry(String name, String status, LocalDateTime timestamp) {
-        this.name = name;
+    public TaskHistoryEntry(String taskName, String status, LocalDateTime timestamp) {
+        this.taskName = taskName;
         this.status = status;
         this.timestamp = timestamp;
     }
 
-    @Override
-    public String toString() {
-        return "[" + timestamp + "] " + name + " - " + status;
-    }
-
     public String getTaskName() {
-        return name;
+        return taskName;
     }
 
     public String getStatus() {

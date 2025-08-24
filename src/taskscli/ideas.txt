@@ -4,7 +4,7 @@
 //                case "CLEAR SPECIFIC HISTORY" - DONE
 //                case "RENAME TASK" - DONE
 //                case "SET REPEAT TIME"
-//                case "INCREASE DELAY"
+//                case "INCREASE DELAY" - DONE
 //                case "FILE HANDLING"
 //                case "INTEGRATE DAYS"
 //                case "INTEGRATE TIME SPECIFIC DELAYS"

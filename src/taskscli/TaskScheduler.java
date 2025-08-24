@@ -16,15 +16,23 @@ public class TaskScheduler {
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
     private final Map<String, ScheduledFuture<?>> repeatingTasks = new HashMap<>();
     private final Map<String, Task> taskMap = new HashMap<>();
+    private final Map<String, Integer> taskDelay = new HashMap<>();
+    private final Map<String, LocalDateTime> scheduledTimeMap = new HashMap<>();
     private final List<TaskHistoryEntry> history = new ArrayList<>();
+
+
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
 
 
     public void schedule(String name, String description, int delaySeconds) {
         Task task = new Task(name, description, this);
         ScheduledFuture<?> future = executor.schedule(task, delaySeconds, TimeUnit.SECONDS);
         scheduledTasks.put(name, future);
+        taskDelay.put(name, delaySeconds);
         taskMap.put(name, task);
         System.out.println("Scheduled: " + name + " after " + delaySeconds + "s");
+        scheduledTimeMap.put(name, LocalDateTime.now());
         scheduledTaskNames.add(name);
         taskStatusMap.put(name, "PENDING ⌛");
     }
@@ -52,9 +60,6 @@ public class TaskScheduler {
     }
 
     public void printHistory() {
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
-
         if(history.isEmpty()) {
             System.out.println("No History Found");
             return;
@@ -178,6 +183,50 @@ public class TaskScheduler {
         } else {
             System.out.println("No History to clear");
         }
+    }
+
+    public void increaseDelay(String name, int delay) {
+        if (delay <= 0){
+            System.out.println("Enter a Valid Delay Time");
+            return;
+        }
+        if (!taskDelay.containsKey(name)) {
+            System.out.println("Original delay not found for task '" + name + "'.");
+            return;
+        }
+        if(taskStatusMap.containsKey(name) && taskStatusMap.get(name).contains("PENDING ⌛")) {
+            ScheduledFuture<?> future = scheduledTasks.get(name);
+            if (future != null && !future.isDone()) {
+                future.cancel(false);
+            }
+            int originalDelay = taskDelay.get(name);
+            int newDelay = originalDelay + delay;
+            taskDelay.put(name, newDelay);
+
+            Task task = taskMap.get(name);
+            ScheduledFuture<?> newFuture = executor.schedule(task, newDelay, TimeUnit.SECONDS);
+            scheduledTasks.put(name, newFuture);
+
+            taskStatusMap.put(name, "RESCHEDULED ⏳");
+            scheduledTimeMap.put(name, LocalDateTime.now().plusSeconds(newDelay));
+            logHistory(name, "DELAY INCREASED ⏳ by " + delay + "s");
+            System.out.println("Task '" + name + "' rescheduled to run in " + newDelay + " seconds.");
+        }   else {
+            System.out.println("Task '" + name + "' is not eligible for delay increase.");
+        }
+    }
+
+    public void showSchedule(String name) {
+        if (!scheduledTimeMap.containsKey(name)) {
+            System.out.println("No scheduled time found for task '" + name + "'.");
+            return;
+        }
+
+        LocalDateTime scheduledTime = scheduledTimeMap.get(name);
+        String date = scheduledTime.format(dateFormatter);
+        String time = scheduledTime.format(timeFormatter);
+
+        System.out.printf("Task '%s' is scheduled for %s at %s%n", name, date, time);
     }
 
     public void shutdown() {

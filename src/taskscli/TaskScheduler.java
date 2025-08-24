@@ -1,5 +1,6 @@
 package taskscli;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +20,8 @@ public class TaskScheduler {
     private final Map<String, Integer> taskDelay = new HashMap<>();
     private final Map<String, LocalDateTime> scheduledTimeMap = new HashMap<>();
     private final List<TaskHistoryEntry> history = new ArrayList<>();
-
+    private final Map<String, Integer> remainingDelayMap = new HashMap<>();
+    private final Map<String, Boolean> pausedTasks = new HashMap<>();
 
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
@@ -227,6 +229,67 @@ public class TaskScheduler {
         String time = scheduledTime.format(timeFormatter);
 
         System.out.printf("Task '%s' is scheduled for %s at %s%n", name, date, time);
+    }
+
+    public void pauseTask(String name) {
+        if (!scheduledTasks.containsKey(name)) {
+            System.out.println("Task '" + name + "' not found.");
+            return;
+        }
+
+        LocalDateTime scheduledTime = scheduledTimeMap.get(name);
+        if (scheduledTime == null) {
+            System.out.println("Scheduled time not found for task '" + name + "'.");
+            return;
+        }
+
+        ScheduledFuture<?> future = scheduledTasks.get(name);
+        if (future.isDone()) {
+            System.out.println("Task '" + name + "' has already completed.");
+            return;
+        }
+
+        boolean cancelled = future.cancel(false);
+        if (cancelled) {
+            long elapsed = Duration.between(scheduledTimeMap.get(name), LocalDateTime.now()).getSeconds();
+            int originalDelay = taskDelay.get(name);
+            int remaining = Math.max(0, originalDelay - (int) elapsed);
+
+            remainingDelayMap.put(name, remaining);
+            pausedTasks.put(name, true);
+            taskStatusMap.put(name, "PAUSED ⏸");
+            logHistory(name, "PAUSED ⏸");
+
+            System.out.println("Task '" + name + "' paused with " + remaining + " seconds remaining.");
+        } else {
+            System.out.println("Failed to pause task '" + name + "'.");
+        }
+    }
+
+    public void resumeTask(String name) {
+        if (!pausedTasks.containsKey(name) || !pausedTasks.get(name)) {
+            System.out.println("Task '" + name + "' is not paused.");
+            return;
+        }
+
+        int remaining = remainingDelayMap.getOrDefault(name, -1);
+        if (remaining <= 0) {
+            System.out.println("No remaining delay found for task '" + name + "'.");
+            return;
+        }
+
+        Task task = taskMap.get(name);
+        ScheduledFuture<?> future = executor.schedule(task, remaining, TimeUnit.SECONDS);
+        scheduledTasks.put(name, future);
+        taskDelay.put(name, remaining);
+        scheduledTimeMap.put(name, LocalDateTime.now().plusSeconds(remaining));
+
+        pausedTasks.remove(name);
+        remainingDelayMap.remove(name);
+        taskStatusMap.put(name, "RESUMED ▶️");
+        logHistory(name, "RESUMED ▶️");
+
+        System.out.println("Task '" + name + "' resumed and will run in " + remaining + " seconds.");
     }
 
 

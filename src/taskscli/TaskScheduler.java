@@ -9,11 +9,28 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.time.format.DateTimeFormatter;
 
+enum TaskState {
+    PENDING("⌛"),
+    RUNNING("▶️"),
+    PAUSED("⏸"),
+    COMPLETED("✅"),
+    FAILED("❌"),
+    DELETED("🗑️"),
+    STOPPED("⛔"),
+    REPEATING("🔁"),
+    RESCHEDULED("⏳");
+
+    private final String icon;
+    TaskState(String icon) { this.icon = icon; }
+    public String getIcon() { return icon; }
+}
+
+
 
 public class TaskScheduler {
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
     private final List<String> scheduledTaskNames = new ArrayList<>();
-    private final Map<String, String> taskStatusMap = new HashMap<>();
+    private final Map<String, TaskState> taskStates = new HashMap<>();
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
     private final Map<String, ScheduledFuture<?>> repeatingTasks = new HashMap<>();
     private final Map<String, Task> taskMap = new HashMap<>();
@@ -36,7 +53,7 @@ public class TaskScheduler {
         System.out.println("Scheduled: " + name + " after " + delaySeconds + "s");
         scheduledTimeMap.put(name, LocalDateTime.now());
         scheduledTaskNames.add(name);
-        taskStatusMap.put(name, "PENDING ⌛");
+        taskStates.put(name, TaskState.PENDING);
     }
 
     public void listTask() {
@@ -92,7 +109,7 @@ public class TaskScheduler {
             public void run() {
                 try {
                     System.out.println("Repeating Task Executed: " + taskName);
-                    logHistory(name, "REPEATED \uD83D\uDD04");
+                    logHistory(name, TaskState.REPEATING);
                 } catch (Exception e) {
                     markFailed(taskName);
                     System.out.println("Repeating Task Failed: " + taskName);
@@ -103,7 +120,7 @@ public class TaskScheduler {
         RepeatingTasks task = new RepeatingTasks(name);
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(task, delay, delay, TimeUnit.SECONDS);
         repeatingTasks.put(name, future);
-        taskStatusMap.put(name, "REPEATING \uD83D\uDD04");
+        taskStates.put(name, TaskState.REPEATING);
         taskMap.put(name, new Task(name, description, this));
         System.out.println("Repeating Task Scheduled: " + name + " every " + delay + "s");
     }
@@ -118,28 +135,29 @@ public class TaskScheduler {
         boolean cancelled = future.cancel(false);
         if (cancelled) {
             repeatingTasks.remove(name);
-            taskStatusMap.put(name, "STOPPED ⛔");
-            logHistory(name, "STOPPED ⛔");
+            taskStates.put(name, TaskState.STOPPED);
+            logHistory(name, TaskState.STOPPED);
             System.out.println("Repeating Task Stopped: " + name);
         } else {
             System.out.println("Failed to stop repeating task: " + name);
         }
     }
 
-    public void logHistory(String taskName, String status) {
+    public void logHistory(String taskName, TaskState state) {
+        String status = state.name() + " " + state.getIcon();
         history.add(new TaskHistoryEntry(taskName, status, LocalDateTime.now()));
     }
 
 
+
     public void markCompleted(String name) {
-        taskStatusMap.put(name, "COMPLETED ✅ ");
+        taskStates.put(name, TaskState.COMPLETED);
     }
 
     public void getStatus(String name) {
-        if (taskStatusMap.containsKey(name)) {
-            String status = taskStatusMap.get(name);
-            String type = repeatingTasks.containsKey(name) ? "REPEATING" : "ONE-TIME";
-            System.out.println("Status of '" + name + "': " + status + " (" + type + ")");
+        if (taskStates.containsKey(name)) {
+            TaskState state = taskStates.get(name);
+            System.out.println("Status of '" + name + "': " + state + " " + state.getIcon());
         } else {
             System.out.println("Task: '" + name + "' not found");
         }
@@ -165,7 +183,7 @@ public class TaskScheduler {
         boolean cancelled = future.cancel(false);
         if (cancelled) {
             scheduledTasks.remove(name);
-            taskStatusMap.put(name, "DELETED \uD83D\uDDD1\uFE0F ");
+            taskStates.put(name, TaskState.DELETED);
             history.add(new TaskHistoryEntry(name, "DELETED \uD83D\uDDD1\uFE0F ", LocalDateTime.now()));
             System.out.println("Task Removed: " + name);
         } else {
@@ -174,9 +192,9 @@ public class TaskScheduler {
     }
 
     public void markFailed(String name) {
-        taskStatusMap.put(name, "FAILED ❌ ");
-        history.add(new TaskHistoryEntry(name, "FAILED ❌ ", LocalDateTime.now()));
+        updateState(name, TaskState.FAILED);
     }
+
 
     public void clearHistory() {
         if(history != null) {
@@ -196,7 +214,7 @@ public class TaskScheduler {
             System.out.println("Original delay not found for task '" + name + "'.");
             return;
         }
-        if(taskStatusMap.containsKey(name) && taskStatusMap.get(name).contains("PENDING ⌛")) {
+        if(taskStates.get(name) == TaskState.PENDING) {
             ScheduledFuture<?> future = scheduledTasks.get(name);
             if (future != null && !future.isDone()) {
                 future.cancel(false);
@@ -208,10 +226,8 @@ public class TaskScheduler {
             Task task = taskMap.get(name);
             ScheduledFuture<?> newFuture = executor.schedule(task, newDelay, TimeUnit.SECONDS);
             scheduledTasks.put(name, newFuture);
-
-            taskStatusMap.put(name, "RESCHEDULED ⏳");
+            updateState(name, TaskState.RESCHEDULED);
             scheduledTimeMap.put(name, LocalDateTime.now().plusSeconds(newDelay));
-            logHistory(name, "DELAY INCREASED ⏳ by " + delay + "s");
             System.out.println("Task '" + name + "' rescheduled to run in " + newDelay + " seconds.");
         }   else {
             System.out.println("Task '" + name + "' is not eligible for delay increase.");
@@ -257,14 +273,18 @@ public class TaskScheduler {
 
             remainingDelayMap.put(name, remaining);
             pausedTasks.put(name, true);
-            taskStatusMap.put(name, "PAUSED ⏸");
-            logHistory(name, "PAUSED ⏸");
-
+            updateState(name, TaskState.PAUSED);
             System.out.println("Task '" + name + "' paused with " + remaining + " seconds remaining.");
         } else {
             System.out.println("Failed to pause task '" + name + "'.");
         }
     }
+
+    private void updateState(String name, TaskState state) {
+        taskStates.put(name, state);
+        logHistory(name, state);
+    }
+
 
     public void resumeTask(String name) {
         if (!pausedTasks.containsKey(name) || !pausedTasks.get(name)) {
@@ -286,9 +306,7 @@ public class TaskScheduler {
 
         pausedTasks.remove(name);
         remainingDelayMap.remove(name);
-        taskStatusMap.put(name, "RESUMED ▶️");
-        logHistory(name, "RESUMED ▶️");
-
+        updateState(name, TaskState.RUNNING);
         System.out.println("Task '" + name + "' resumed and will run in " + remaining + " seconds.");
     }
 
